@@ -11,34 +11,26 @@ interface ClientFormProps {
 
 interface FormData {
   name: string
-  email: string
   phone: string
   address: string
   city: string
-  zip: string
 }
 
 export default function ClientForm({ onSubmit, onCancel, initialData }: ClientFormProps) {
-  // Initialiser avec des valeurs par défaut pour éviter undefined
   const [formData, setFormData] = useState<FormData>({
     name: '',
-    email: '',
     phone: '',
     address: '',
     city: '',
-    zip: '',
   })
 
-  // Mettre à jour le formData si initialData change
   useEffect(() => {
     if (initialData) {
       setFormData({
         name: initialData.name || '',
-        email: initialData.email || '',
         phone: initialData.phone || '',
         address: initialData.address || '',
         city: initialData.city || '',
-        zip: initialData.zip || '',
       })
     }
   }, [initialData])
@@ -66,18 +58,6 @@ export default function ClientForm({ onSubmit, onCancel, initialData }: ClientFo
             required
             className="w-full rounded-md border border-border bg-input px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             placeholder="Nom de l'entreprise"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-1">Email</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            className="w-full rounded-md border border-border bg-input px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="contact@example.fr"
           />
         </div>
         <div>
@@ -114,18 +94,6 @@ export default function ClientForm({ onSubmit, onCancel, initialData }: ClientFo
             required
             className="w-full rounded-md border border-border bg-input px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             placeholder="Paris"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-1">Code Postal</label>
-          <input
-            type="text"
-            name="zip"
-            value={formData.zip}
-            onChange={handleChange}
-            required
-            className="w-full rounded-md border border-border bg-input px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="75001"
           />
         </div>
       </div>
