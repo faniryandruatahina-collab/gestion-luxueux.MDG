@@ -57,8 +57,8 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* SEULEMENT UN HEADER ICI */}
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Header */}
       <header className="border-b border-border bg-card sticky top-0 z-50">
         <div className="mx-auto flex items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
@@ -94,7 +94,8 @@ export default function HomePage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-6 py-16">
+      {/* Main content */}
+      <main className="flex-1 mx-auto max-w-7xl px-6 py-16">
         <div className="mb-16 text-center">
           <h2 className="mb-4 text-4xl font-bold text-foreground">Gestion d'Entreprise de Luxueux.MDG</h2>
           <p className="text-lg text-muted-foreground">
@@ -135,6 +136,20 @@ export default function HomePage() {
           </div>
         </div>
       </main>
+
+      {/* Footer signature */}
+      <footer className="border-t border-border bg-card py-4 mt-auto">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="flex flex-col sm:flex-row justify-between items-center">
+            <div className="text-sm text-muted-foreground">
+              © 2025 Luxueux.MDG. Tous droits réservés.
+            </div>
+            <div className="text-sm text-muted-foreground mt-2 sm:mt-0">
+              Développé par <span className="text-accent font-medium">ANDRIATAHINA Fanirintsoa</span>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }
