@@ -25,30 +25,16 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, email, phone, address, city, zip } = await request.json()
+    const { name, phone, address, city } = await request.json()
     
     const result = await pool.query(
-      'INSERT INTO clients (name, email, phone, address, city, zip) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-      [name, email, phone, address, city, zip]
+      'INSERT INTO clients (name, phone, address, city) VALUES ($1, $2, $3, $4) RETURNING *',
+      [name, phone, address, city]
     )
     
     return NextResponse.json(result.rows[0], { status: 201 })
   } catch (error: any) {
     console.error('❌ Erreur POST client:', error)
-    if (error.code === '23505') {
-      // Récupérer l'email depuis les données de la requête
-      const { email } = await request.json() // ← CORRECTION ICI
-      
-      // Récupérer le client existant pour donner plus d'informations
-      const existingClient = await pool.query(
-        'SELECT name FROM clients WHERE email = $1', 
-        [email]
-      )
-      const existingName = existingClient.rows[0]?.name || 'inconnu'
-      return NextResponse.json({ 
-        error: `Un client nommé "${existingName}" utilise déjà cet email. Veuillez utiliser un email différent ou modifier le client existant.` 
-      }, { status: 400 })
-    }
     return NextResponse.json({ error: 'Erreur lors de la création du client' }, { status: 500 })
   }
 }
@@ -62,11 +48,11 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'ID manquant' }, { status: 400 })
     }
     
-    const { name, email, phone, address, city, zip } = await request.json()
+    const { name, phone, address, city } = await request.json()
     
     const result = await pool.query(
-      'UPDATE clients SET name = $1, email = $2, phone = $3, address = $4, city = $5, zip = $6, updated_at = CURRENT_TIMESTAMP WHERE id = $7 RETURNING *',
-      [name, email, phone, address, city, zip, id]
+      'UPDATE clients SET name = $1, phone = $2, address = $3, city = $4, updated_at = CURRENT_TIMESTAMP WHERE id = $5 RETURNING *',
+      [name, phone, address, city, id]
     )
     
     if (result.rows.length === 0) {
@@ -75,9 +61,6 @@ export async function PUT(request: NextRequest) {
     
     return NextResponse.json(result.rows[0])
   } catch (error: any) {
-    if (error.code === '23505') {
-      return NextResponse.json({ error: 'Un client avec cet email existe déjà' }, { status: 400 })
-    }
     return NextResponse.json({ error: 'Erreur lors de la mise à jour du client' }, { status: 500 })
   }
 }
