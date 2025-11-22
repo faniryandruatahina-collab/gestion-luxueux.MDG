@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Plus, ChevronLeft } from 'lucide-react'
+import { Plus, ChevronLeft, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import ClientForm from '@/components/client-form'
 import ClientTable from '@/components/client-table'
@@ -22,11 +23,26 @@ export default function ClientsPage() {
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const router = useRouter()
 
-  // Charger les clients au démarrage
   useEffect(() => {
-    fetchClients()
+    checkAuth()
   }, [])
+
+  const checkAuth = () => {
+    const auth = localStorage.getItem('adminAuth')
+    const loginTime = localStorage.getItem('adminLoginTime')
+    
+    if (auth && loginTime && (Date.now() - parseInt(loginTime)) < 24 * 60 * 60 * 1000) {
+      setIsAuthenticated(true)
+      fetchClients()
+    } else {
+      localStorage.removeItem('adminAuth')
+      localStorage.removeItem('adminLoginTime')
+      router.push('/admin')
+    }
+  }
 
   const fetchClients = async () => {
     try {
@@ -67,7 +83,6 @@ export default function ClientsPage() {
         alert(editingId ? 'Client modifié avec succès' : 'Client ajouté avec succès')
       } else {
         const errorData = await response.json()
-        // Affichez l'erreur de manière claire
         if (errorData.error) {
           console.error('❌ Erreur API:', errorData.error)
           alert(`Erreur: ${errorData.error}`)
@@ -77,7 +92,6 @@ export default function ClientsPage() {
         }
       }
     } catch (error: any) {
-      // Affichez l'erreur réelle
       console.error('❌ Erreur de connexion:', error.message || error)
       alert('Erreur de connexion au serveur')
     }
@@ -99,18 +113,36 @@ export default function ClientsPage() {
           alert('Client supprimé avec succès')
         } else {
           const errorData = await response.json()
-          console.error('❌ Erreur suppression:', errorData) // ← CORRIGEZ
+          console.error('❌ Erreur suppression:', errorData)
           alert(`Erreur: ${errorData.error}`)
         }
       } catch (error) {
-        console.error('❌ Erreur connexion:', error) // ← CORRIGEZ
+        console.error('❌ Erreur connexion:', error)
         alert('Erreur de connexion au serveur')
       }
     }
   }
+
   const handleEdit = (client: Client) => {
     setEditingId(client.id)
     setShowForm(true)
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminAuth')
+    localStorage.removeItem('adminLoginTime')
+    router.push('/admin')
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-foreground">Redirection...</p>
+        </div>
+      </div>
+    )
   }
 
   if (loading) {
@@ -126,7 +158,13 @@ export default function ClientsPage() {
             <span>Retour</span>
           </Link>
           <h1 className="text-2xl font-bold text-foreground">Gestion des Clients</h1>
-          <div />
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/20 rounded-md transition-colors"
+          >
+            <Lock className="h-4 w-4" />
+            Déconnexion
+          </button>
         </div>
       </header>
 
