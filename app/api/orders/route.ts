@@ -49,7 +49,49 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// AJOUTEZ CETTE FONCTION DELETE POUR LES COMMANDES
+// FONCTION PUT POUR MODIFIER
+export async function PUT(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get('id')
+    
+    if (!id) {
+      return NextResponse.json({ error: 'ID manquant' }, { status: 400 })
+    }
+    
+    console.log('✏️ Modification commande ID:', id)
+    
+    const { order_number, client_name, product, quantity, unit_price, total_price, status, order_date, product_images } = await request.json()
+    
+    const result = await pool.query(
+      `UPDATE orders SET 
+        order_number = $1, 
+        client_name = $2, 
+        product = $3, 
+        quantity = $4, 
+        unit_price = $5, 
+        total_price = $6, 
+        status = $7, 
+        order_date = $8,
+        product_images = $9,
+        updated_at = CURRENT_TIMESTAMP
+       WHERE id = $10 RETURNING *`,
+      [order_number, client_name, product, quantity, unit_price, total_price, status, order_date, JSON.stringify(product_images), id]
+    )
+    
+    if (result.rows.length === 0) {
+      return NextResponse.json({ error: 'Commande non trouvée' }, { status: 404 })
+    }
+    
+    console.log('✅ Commande modifiée:', result.rows[0])
+    return NextResponse.json(result.rows[0])
+  } catch (error: any) {
+    console.error('❌ Erreur PUT order:', error)
+    return NextResponse.json({ error: 'Erreur lors de la mise à jour de la commande: ' + error.message }, { status: 500 })
+  }
+}
+
+// FONCTION DELETE POUR SUPPRIMER
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -65,10 +107,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Commande non trouvée' }, { status: 404 })
     }
     
-    return NextResponse.json({ 
-      message: 'Commande supprimée avec succès',
-      deletedOrder: result.rows[0]
-    })
+    return NextResponse.json({ message: 'Commande supprimée avec succès' })
   } catch (error: any) {
     console.error('❌ Erreur DELETE order:', error)
     return NextResponse.json({ error: 'Erreur lors de la suppression de la commande' }, { status: 500 })
