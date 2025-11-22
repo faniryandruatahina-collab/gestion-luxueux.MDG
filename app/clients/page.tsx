@@ -150,8 +150,9 @@ export default function ClientsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card">
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Header fixe */}
+      <header className="border-b border-border bg-card sticky top-0 z-50">
         <div className="mx-auto flex items-center justify-between px-6 py-4">
           <Link href="/" className="flex items-center gap-2 text-foreground hover:text-accent">
             <ChevronLeft className="h-5 w-5" />
@@ -168,7 +169,8 @@ export default function ClientsPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-6 py-8">
+      {/* Main content avec padding pour header et footer */}
+      <main className="flex-1 mx-auto max-w-6xl w-full px-6 py-8 pb-24"> {/* pb-24 pour espace footer */}
         <div className="mb-8 flex justify-between items-center">
           <div>
             <h2 className="text-xl font-semibold text-foreground">Liste des Clients</h2>
@@ -204,7 +206,9 @@ export default function ClientsPage() {
           />
         </div>
       </main>
-        <footer className="border-t border-border bg-card py-4 mt-auto">
+
+      {/* Footer fixe en bas */}
+      <footer className="border-t border-border bg-card py-4 fixed bottom-0 left-0 right-0 z-40">
         <div className="mx-auto max-w-7xl px-6">
           <div className="flex flex-col sm:flex-row justify-between items-center">
             <div className="text-sm text-muted-foreground">
