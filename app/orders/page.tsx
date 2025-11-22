@@ -68,10 +68,6 @@ export default function OrdersPage() {
       if (ordersRes.ok) {
         const ordersData = await ordersRes.json()
         console.log('📦 Données brutes de l\'API orders:', ordersData)
-        if (ordersData.length > 0) {
-          console.log('📋 Structure de la première commande:', ordersData[0])
-          console.log('🖼️ Images de la première commande:', ordersData[0].product_images)
-        }
         setOrders(ordersData)
       } else {
         console.error('❌ Erreur chargement orders')
@@ -91,8 +87,6 @@ export default function OrdersPage() {
   }
 
   const mapOrderToDetails = (order: any) => {
-    console.log('🗺️ Mapping des données de la commande:', order)
-    
     return {
       id: order.id,
       orderNumber: order.order_number || order.orderNumber,
@@ -128,9 +122,6 @@ export default function OrdersPage() {
         order_date: data.date,
         product_images: data.productImages || []
       }
-
-      console.log('📤 Données envoyées à l\'API:', orderData)
-      console.log('🖼️ Images envoyées:', data.productImages)
 
       const response = await fetch(url, {
         method: method,
@@ -198,8 +189,6 @@ export default function OrdersPage() {
           return
         }
 
-        console.log('📦 Données actuelles de la commande:', currentOrder)
-
         const updateResponse = await fetch(`/api/orders?id=${id}`, {
           method: 'PUT',
           headers: {
@@ -234,15 +223,12 @@ export default function OrdersPage() {
   }
 
   const handleEdit = (order: Order) => {
-    console.log('✏️ Édition de la commande:', order)
     setEditingId(order.id)
     setShowForm(true)
   }
 
   const handleViewDetails = (order: any) => {
-    console.log('🔍 COMMANDE SÉLECTIONNÉE POUR DÉTAILS (avant mapping):', order)
     const mappedOrder = mapOrderToDetails(order)
-    console.log('🔍 COMMANDE SÉLECTIONNÉE POUR DÉTAILS (après mapping):', mappedOrder)
     setSelectedOrder(mappedOrder)
     setShowDetails(true)
   }
@@ -304,8 +290,8 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="border-b border-border bg-card">
+    <div className="min-h-screen bg-background flex flex-col">
+      <header className="border-b border-border bg-card sticky top-0 z-50">
         <div className="mx-auto flex items-center justify-between px-6 py-4">
           <Link 
             href="/" 
@@ -325,7 +311,7 @@ export default function OrdersPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+      <main className="flex-1 mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-8 pb-24">
         <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h2 className="text-2xl font-semibold text-foreground">Liste des Commandes</h2>
@@ -443,7 +429,8 @@ export default function OrdersPage() {
           />
         )}
       </main>
-          <footer className="border-t border-border bg-card py-4 mt-auto">
+
+      <footer className="border-t border-border bg-card py-4 fixed bottom-0 left-0 right-0 z-40">
         <div className="mx-auto max-w-7xl px-6">
           <div className="flex flex-col sm:flex-row justify-between items-center">
             <div className="text-sm text-muted-foreground">
