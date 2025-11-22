@@ -28,7 +28,7 @@ export default function AdminLogin() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <div className="flex-1 flex items-center justify-center px-4">
+      <div className="flex-1 flex items-center justify-center px-4 pb-24">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">
             <div className="mx-auto w-16 h-16 bg-primary rounded-full flex items-center justify-center">
@@ -100,7 +100,7 @@ export default function AdminLogin() {
         </div>
       </div>
 
-      <footer className="border-t border-border bg-card py-4">
+      <footer className="border-t border-border bg-card py-4 fixed bottom-0 left-0 right-0 z-40">
         <div className="mx-auto max-w-7xl px-6">
           <div className="flex flex-col sm:flex-row justify-between items-center">
             <div className="text-sm text-muted-foreground">
