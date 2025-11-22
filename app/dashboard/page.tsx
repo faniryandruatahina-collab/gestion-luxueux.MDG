@@ -306,6 +306,18 @@ export default function DashboardPage() {
           </div>
         </div>
       </main>
+        <footer className="border-t border-border bg-card py-4 mt-auto">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="flex flex-col sm:flex-row justify-between items-center">
+            <div className="text-sm text-muted-foreground">
+              © 2025 Luxueux.MDG. Tous droits réservés.
+            </div>
+            <div className="text-sm text-muted-foreground mt-2 sm:mt-0">
+              Développé par <span className="text-accent font-medium">ANDRIATAHINA Fanirintsoa</span>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }
