@@ -67,38 +67,17 @@ export default function OrdersPage() {
 
       if (ordersRes.ok) {
         const ordersData = await ordersRes.json()
-        console.log('📦 Données brutes de l\'API orders:', ordersData)
         setOrders(ordersData)
-      } else {
-        console.error('❌ Erreur chargement orders')
       }
 
       if (clientsRes.ok) {
         const clientsData = await clientsRes.json()
         setClients(clientsData)
-      } else {
-        console.error('❌ Erreur chargement clients')
       }
     } catch (error) {
       console.error('❌ Erreur chargement données:', error)
     } finally {
       setLoading(false)
-    }
-  }
-
-  const mapOrderToDetails = (order: any) => {
-    return {
-      id: order.id,
-      orderNumber: order.order_number || order.orderNumber,
-      clientName: order.client_name || order.clientName,
-      product: order.product,
-      quantity: order.quantity,
-      unitPrice: order.unit_price || order.unitPrice,
-      totalPrice: order.total_price || order.totalPrice,
-      status: order.status,
-      date: order.order_date || order.date,
-      productImage: order.product_image || order.productImage,
-      productImages: order.product_images || order.productImages || []
     }
   }
 
@@ -132,30 +111,16 @@ export default function OrdersPage() {
       })
 
       if (response.ok) {
-        await fetchOrders()
+        await loadData()
         setShowForm(false)
         setEditingId(null)
         alert(editingId ? 'Commande modifiée avec succès' : 'Commande ajoutée avec succès')
       } else {
         const errorData = await response.json()
-        console.error('❌ Erreur API:', errorData)
         alert(errorData.error || 'Une erreur est survenue')
       }
     } catch (error) {
-      console.error('❌ Erreur:', error)
       alert('Erreur de connexion')
-    }
-  }
-
-  const fetchOrders = async () => {
-    try {
-      const response = await fetch('/api/orders')
-      if (response.ok) {
-        const data = await response.json()
-        setOrders(data)
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des commandes:', error)
     }
   }
 
@@ -167,7 +132,7 @@ export default function OrdersPage() {
         })
 
         if (response.ok) {
-          await fetchOrders()
+          await loadData()
           alert('Commande supprimée avec succès')
         } else {
           const errorData = await response.json()
@@ -208,15 +173,13 @@ export default function OrdersPage() {
         })
 
         if (updateResponse.ok) {
-          await fetchOrders()
+          await loadData()
           alert('Commande marquée comme livrée avec succès')
         } else {
           const errorData = await updateResponse.json()
-          console.error('❌ Erreur API:', errorData)
           alert(`Erreur: ${errorData.error}`)
         }
       } catch (error) {
-        console.error('❌ Erreur:', error)
         alert('Erreur de connexion')
       }
     }
@@ -228,8 +191,19 @@ export default function OrdersPage() {
   }
 
   const handleViewDetails = (order: any) => {
-    const mappedOrder = mapOrderToDetails(order)
-    setSelectedOrder(mappedOrder)
+    setSelectedOrder({
+      id: order.id,
+      orderNumber: order.order_number || order.orderNumber,
+      clientName: order.client_name || order.clientName,
+      product: order.product,
+      quantity: order.quantity,
+      unitPrice: order.unit_price || order.unitPrice,
+      totalPrice: order.total_price || order.totalPrice,
+      status: order.status,
+      date: order.order_date || order.date,
+      productImage: order.product_image || order.productImage,
+      productImages: order.product_images || order.productImages || []
+    })
     setShowDetails(true)
   }
 
@@ -245,45 +219,21 @@ export default function OrdersPage() {
   }
 
   const formatAriary = (amount: any): string => {
-    if (amount === undefined || amount === null) {
-      return '0 Ar'
-    }
-    
+    if (amount === undefined || amount === null) return '0 Ar'
     const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount
-    
-    if (isNaN(numAmount)) {
-      return '0 Ar'
-    }
-    
-    return new Intl.NumberFormat('fr-FR').format(numAmount) + ' Ar'
+    return isNaN(numAmount) ? '0 Ar' : new Intl.NumberFormat('fr-FR').format(numAmount) + ' Ar'
   }
 
   const calculateTotalRevenue = (): number => {
-    const total = orders.reduce((sum, order) => {
-      const revenue = parseFloat(order.total_price as any) || 0
-      return sum + revenue
-    }, 0)
-    
-    return total
+    return orders.reduce((sum, order) => sum + (parseFloat(order.total_price as any) || 0), 0)
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-foreground">Redirection...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-foreground">Chargement des commandes...</p>
+          <p className="text-foreground">{!isAuthenticated ? 'Redirection...' : 'Chargement...'}</p>
         </div>
       </div>
     )
@@ -291,45 +241,52 @@ export default function OrdersPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      {/* Header */}
       <header className="border-b border-border bg-card sticky top-0 z-50">
-        <div className="mx-auto flex items-center justify-between px-6 py-4">
-          <Link 
-            href="/" 
-            className="flex items-center gap-2 text-foreground hover:text-accent transition-colors"
-          >
-            <ChevronLeft className="h-5 w-5" />
-            <span>Retour</span>
-          </Link>
-          <h1 className="text-2xl font-bold text-foreground">Gestion des Commandes</h1>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/20 rounded-md transition-colors"
-          >
-            <Lock className="h-4 w-4" />
-            Déconnexion
-          </button>
+        <div className="mx-auto px-4 sm:px-6 py-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <Link href="/" className="flex items-center gap-2 text-foreground hover:text-accent transition-colors">
+                <ChevronLeft className="h-5 w-5" />
+                <span className="hidden sm:inline">Retour</span>
+              </Link>
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground">Gestion des Commandes</h1>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/20 rounded-md transition-colors self-end sm:self-auto"
+            >
+              <Lock className="h-4 w-4" />
+              <span className="hidden sm:inline">Déconnexion</span>
+            </button>
+          </div>
         </div>
       </header>
 
-      <main className="flex-1 mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-8 pb-24">
-        <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h2 className="text-2xl font-semibold text-foreground">Liste des Commandes</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Total: {orders.length} commande{orders.length > 1 ? 's' : ''}
-            </p>
+      {/* Main Content */}
+      <main className="flex-1 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 pb-28">
+        {/* Header Section */}
+        <div className="mb-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h2 className="text-lg sm:text-xl font-semibold text-foreground">Liste des Commandes</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Total: {orders.length} commande{orders.length > 1 ? 's' : ''}
+              </p>
+            </div>
+            <Button 
+              onClick={() => setShowForm(!showForm)}
+              className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-md transition-colors w-full sm:w-auto"
+            >
+              <Plus className="h-4 w-4" />
+              {showForm ? 'Masquer' : 'Nouvelle commande'}
+            </Button>
           </div>
-          <Button 
-            onClick={() => setShowForm(!showForm)}
-            className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-md transition-colors"
-          >
-            <Plus className="h-4 w-4" />
-            {showForm ? 'Masquer le formulaire' : 'Ajouter une commande'}
-          </Button>
         </div>
 
+        {/* Order Form */}
         {showForm && (
-          <div className="mb-8 rounded-lg border border-border bg-card p-6 shadow-sm">
+          <div className="mb-6 rounded-lg border border-border bg-card p-4 sm:p-6 shadow-sm">
             <h3 className="text-lg font-semibold text-foreground mb-4">
               {editingId ? 'Modifier la commande' : 'Nouvelle commande'}
             </h3>
@@ -345,6 +302,7 @@ export default function OrdersPage() {
           </div>
         )}
 
+        {/* Orders Table */}
         <div className="rounded-lg border border-border bg-card overflow-hidden shadow-sm">
           {orders.length === 0 ? (
             <div className="text-center py-12">
@@ -353,7 +311,7 @@ export default function OrdersPage() {
               <p className="text-muted-foreground mb-4">Commencez par ajouter votre première commande</p>
               <Button 
                 onClick={() => setShowForm(true)}
-                className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground"
+                className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground mx-auto"
               >
                 <Plus className="h-4 w-4" />
                 Ajouter une commande
@@ -382,46 +340,48 @@ export default function OrdersPage() {
           )}
         </div>
 
+        {/* Statistics */}
         {orders.length > 0 && (
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="rounded-lg border border-border bg-card p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Chiffre d'affaires total</p>
-                  <p className="text-xl font-bold text-foreground">
+                  <p className="text-sm text-muted-foreground">Chiffre d'affaires</p>
+                  <p className="text-lg sm:text-xl font-bold text-foreground">
                     {formatAriary(calculateTotalRevenue())}
                   </p>
                 </div>
-                <DollarSign className="h-8 w-8 text-green-500" />
+                <DollarSign className="h-6 w-6 sm:h-8 sm:w-8 text-green-500" />
               </div>
             </div>
             
             <div className="rounded-lg border border-border bg-card p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Commandes en cours</p>
-                  <p className="text-xl font-bold text-foreground">
+                  <p className="text-sm text-muted-foreground">En cours</p>
+                  <p className="text-lg sm:text-xl font-bold text-foreground">
                     {orders.filter(order => order.status === 'En cours').length}
                   </p>
                 </div>
-                <Package className="h-8 w-8 text-blue-500" />
+                <Package className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500" />
               </div>
             </div>
             
             <div className="rounded-lg border border-border bg-card p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Commandes livrées</p>
-                  <p className="text-xl font-bold text-foreground">
+                  <p className="text-sm text-muted-foreground">Livrées</p>
+                  <p className="text-lg sm:text-xl font-bold text-foreground">
                     {orders.filter(order => order.status === 'Livré').length}
                   </p>
                 </div>
-                <CheckCircle className="h-8 w-8 text-green-500" />
+                <CheckCircle className="h-6 w-6 sm:h-8 sm:w-8 text-green-500" />
               </div>
             </div>
           </div>
         )}
 
+        {/* Order Details Modal */}
         {showDetails && selectedOrder && (
           <OrderDetails 
             order={selectedOrder}
@@ -430,9 +390,10 @@ export default function OrdersPage() {
         )}
       </main>
 
+      {/* Footer */}
       <footer className="border-t border-border bg-card py-4 fixed bottom-0 left-0 right-0 z-40">
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="flex flex-col sm:flex-row justify-between items-center">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <div className="flex flex-col sm:flex-row justify-between items-center text-center sm:text-left">
             <div className="text-sm text-muted-foreground">
               © 2025 Luxueux.MDG. Tous droits réservés.
             </div>
