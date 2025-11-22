@@ -138,8 +138,8 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <header className="border-b border-border bg-card">
+      <div className="min-h-screen bg-background flex flex-col">
+        <header className="border-b border-border bg-card sticky top-0 z-50">
           <div className="mx-auto flex items-center justify-between px-6 py-4">
             <Link href="/" className="flex items-center gap-2 text-foreground hover:text-accent">
               <ChevronLeft className="h-5 w-5" />
@@ -155,7 +155,7 @@ export default function DashboardPage() {
             </button>
           </div>
         </header>
-        <main className="mx-auto max-w-6xl px-6 py-8">
+        <main className="flex-1 mx-auto max-w-6xl w-full px-6 py-8 pb-24">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
@@ -163,13 +163,25 @@ export default function DashboardPage() {
             </div>
           </div>
         </main>
+        <footer className="border-t border-border bg-card py-4 fixed bottom-0 left-0 right-0 z-40">
+          <div className="mx-auto max-w-7xl px-6">
+            <div className="flex flex-col sm:flex-row justify-between items-center">
+              <div className="text-sm text-muted-foreground">
+                © 2025 Luxueux.MDG. Tous droits réservés.
+              </div>
+              <div className="text-sm text-muted-foreground mt-2 sm:mt-0">
+                Développé par <span className="text-accent font-medium">ANDRIATAHINA Fanirintsoa</span>
+              </div>
+            </div>
+          </div>
+        </footer>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card">
+    <div className="min-h-screen bg-background flex flex-col">
+      <header className="border-b border-border bg-card sticky top-0 z-50">
         <div className="mx-auto flex items-center justify-between px-6 py-4">
           <Link href="/" className="flex items-center gap-2 text-foreground hover:text-accent">
             <ChevronLeft className="h-5 w-5" />
@@ -186,7 +198,7 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-6 py-8">
+      <main className="flex-1 mx-auto max-w-6xl w-full px-6 py-8 pb-24">
         <div className="grid gap-6 md:grid-cols-4 mb-8">
           <div className="rounded-lg border border-border bg-card p-6">
             <div className="flex items-center justify-between">
@@ -306,7 +318,8 @@ export default function DashboardPage() {
           </div>
         </div>
       </main>
-        <footer className="border-t border-border bg-card py-4 mt-auto">
+
+      <footer className="border-t border-border bg-card py-4 fixed bottom-0 left-0 right-0 z-40">
         <div className="mx-auto max-w-7xl px-6">
           <div className="flex flex-col sm:flex-row justify-between items-center">
             <div className="text-sm text-muted-foreground">
