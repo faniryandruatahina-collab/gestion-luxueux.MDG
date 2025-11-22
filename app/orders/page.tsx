@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Plus, ChevronLeft, DollarSign, Package, CheckCircle } from 'lucide-react'
+import { Plus, ChevronLeft, DollarSign, Package, CheckCircle, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import OrderForm from '@/components/order-form'
 import OrderTable from '@/components/order-table'
@@ -18,8 +19,8 @@ interface Order {
   total_price: number
   status: string
   order_date: string
-  product_image?: string  // Ancien format (une seule image)
-  product_images?: string[] // Nouveau format (plusieurs images)
+  product_image?: string
+  product_images?: string[]
 }
 
 interface Client {
@@ -36,14 +37,64 @@ export default function OrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const [showDetails, setShowDetails] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const router = useRouter()
 
-  // Fonction pour mapper les données de la commande
+  useEffect(() => {
+    checkAuth()
+  }, [])
+
+  const checkAuth = () => {
+    const auth = localStorage.getItem('adminAuth')
+    const loginTime = localStorage.getItem('adminLoginTime')
+    
+    if (auth && loginTime && (Date.now() - parseInt(loginTime)) < 24 * 60 * 60 * 1000) {
+      setIsAuthenticated(true)
+      loadData()
+    } else {
+      localStorage.removeItem('adminAuth')
+      localStorage.removeItem('adminLoginTime')
+      router.push('/admin')
+    }
+  }
+
+  const loadData = async () => {
+    try {
+      const [ordersRes, clientsRes] = await Promise.all([
+        fetch('/api/orders'),
+        fetch('/api/clients')
+      ])
+
+      if (ordersRes.ok) {
+        const ordersData = await ordersRes.json()
+        console.log('📦 Données brutes de l\'API orders:', ordersData)
+        if (ordersData.length > 0) {
+          console.log('📋 Structure de la première commande:', ordersData[0])
+          console.log('🖼️ Images de la première commande:', ordersData[0].product_images)
+        }
+        setOrders(ordersData)
+      } else {
+        console.error('❌ Erreur chargement orders')
+      }
+
+      if (clientsRes.ok) {
+        const clientsData = await clientsRes.json()
+        setClients(clientsData)
+      } else {
+        console.error('❌ Erreur chargement clients')
+      }
+    } catch (error) {
+      console.error('❌ Erreur chargement données:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const mapOrderToDetails = (order: any) => {
     console.log('🗺️ Mapping des données de la commande:', order)
     
     return {
       id: order.id,
-      // Supporte les deux formats de propriétés
       orderNumber: order.order_number || order.orderNumber,
       clientName: order.client_name || order.clientName,
       product: order.product,
@@ -52,53 +103,16 @@ export default function OrdersPage() {
       totalPrice: order.total_price || order.totalPrice,
       status: order.status,
       date: order.order_date || order.date,
-      productImage: order.product_image || order.productImage, // Ancien format
-      productImages: order.product_images || order.productImages || [] // Nouveau format
+      productImage: order.product_image || order.productImage,
+      productImages: order.product_images || order.productImages || []
     }
   }
-
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [ordersRes, clientsRes] = await Promise.all([
-          fetch('/api/orders'),
-          fetch('/api/clients')
-        ])
-
-        if (ordersRes.ok) {
-          const ordersData = await ordersRes.json()
-          console.log('📦 Données brutes de l\'API orders:', ordersData)
-          if (ordersData.length > 0) {
-            console.log('📋 Structure de la première commande:', ordersData[0])
-            console.log('🖼️ Images de la première commande:', ordersData[0].product_images)
-          }
-          setOrders(ordersData)
-        } else {
-          console.error('❌ Erreur chargement orders')
-        }
-
-        if (clientsRes.ok) {
-          const clientsData = await clientsRes.json()
-          setClients(clientsData)
-        } else {
-          console.error('❌ Erreur chargement clients')
-        }
-      } catch (error) {
-        console.error('❌ Erreur chargement données:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadData()
-  }, [])
 
   const handleAddOrder = async (data: any) => {
     try {
       const url = editingId ? `/api/orders?id=${editingId}` : '/api/orders'
       const method = editingId ? 'PUT' : 'POST'
 
-      // Calcul sécurisé du total
       const quantity = parseFloat(data.quantity) || 0
       const unitPrice = parseFloat(data.unitPrice) || 0
       const totalPrice = quantity * unitPrice
@@ -112,7 +126,7 @@ export default function OrdersPage() {
         total_price: totalPrice,
         status: data.status,
         order_date: data.date,
-        product_images: data.productImages || [] // Nouveau format
+        product_images: data.productImages || []
       }
 
       console.log('📤 Données envoyées à l\'API:', orderData)
@@ -174,11 +188,9 @@ export default function OrdersPage() {
     }
   }
 
-  // Fonction pour marquer comme livré
   const handleMarkAsDelivered = async (id: number) => {
     if (confirm('Êtes-vous sûr de vouloir marquer cette commande comme livrée ?')) {
       try {
-        // Trouver la commande dans l'état local
         const currentOrder = orders.find(order => order.id === id)
         
         if (!currentOrder) {
@@ -188,7 +200,6 @@ export default function OrdersPage() {
 
         console.log('📦 Données actuelles de la commande:', currentOrder)
 
-        // Mettre à jour la commande avec le nouveau statut
         const updateResponse = await fetch(`/api/orders?id=${id}`, {
           method: 'PUT',
           headers: {
@@ -201,9 +212,9 @@ export default function OrdersPage() {
             quantity: currentOrder.quantity,
             unit_price: currentOrder.unit_price,
             total_price: currentOrder.total_price,
-            status: 'Livré', // On change seulement le statut
+            status: 'Livré',
             order_date: currentOrder.order_date,
-            product_images: currentOrder.product_images || [] // Inclure les images
+            product_images: currentOrder.product_images || []
           }),
         })
 
@@ -241,13 +252,17 @@ export default function OrdersPage() {
     setSelectedOrder(null)
   }
 
-  // Fonction sécurisée pour formater en Ariary (accepte number et string)
+  const handleLogout = () => {
+    localStorage.removeItem('adminAuth')
+    localStorage.removeItem('adminLoginTime')
+    router.push('/admin')
+  }
+
   const formatAriary = (amount: any): string => {
     if (amount === undefined || amount === null) {
       return '0 Ar'
     }
     
-    // Convertir en nombre
     const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount
     
     if (isNaN(numAmount)) {
@@ -257,7 +272,6 @@ export default function OrdersPage() {
     return new Intl.NumberFormat('fr-FR').format(numAmount) + ' Ar'
   }
 
-  // Fonction sécurisée pour calculer le chiffre d'affaires total
   const calculateTotalRevenue = (): number => {
     const total = orders.reduce((sum, order) => {
       const revenue = parseFloat(order.total_price as any) || 0
@@ -265,6 +279,17 @@ export default function OrdersPage() {
     }, 0)
     
     return total
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-foreground">Redirection...</p>
+        </div>
+      </div>
+    )
   }
 
   if (loading) {
@@ -290,7 +315,13 @@ export default function OrdersPage() {
             <span>Retour</span>
           </Link>
           <h1 className="text-2xl font-bold text-foreground">Gestion des Commandes</h1>
-          <div className="w-20"></div>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/20 rounded-md transition-colors"
+          >
+            <Lock className="h-4 w-4" />
+            Déconnexion
+          </button>
         </div>
       </header>
 
@@ -354,8 +385,8 @@ export default function OrdersPage() {
                 totalPrice: order.total_price,
                 status: order.status,
                 date: order.order_date,
-                productImage: order.product_image, // Ancien format
-                productImages: order.product_images || [] // Nouveau format
+                productImage: order.product_image,
+                productImages: order.product_images || []
               }))}
               onEdit={handleEdit}
               onDelete={handleDeleteOrder}
@@ -405,7 +436,6 @@ export default function OrdersPage() {
           </div>
         )}
 
-        {/* Modal de détails avec données mappées */}
         {showDetails && selectedOrder && (
           <OrderDetails 
             order={selectedOrder}
