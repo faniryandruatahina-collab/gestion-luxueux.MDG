@@ -36,8 +36,10 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('❌ Erreur POST client:', error)
     if (error.code === '23505') {
-      const { email } = await request.json()
+      // Récupérer l'email depuis les données de la requête
+      const { email } = await request.json() // ← CORRECTION ICI
       
+      // Récupérer le client existant pour donner plus d'informations
       const existingClient = await pool.query(
         'SELECT name FROM clients WHERE email = $1', 
         [email]
@@ -51,7 +53,35 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// AJOUTEZ CETTE FONCTION DELETE
+export async function PUT(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get('id')
+    
+    if (!id) {
+      return NextResponse.json({ error: 'ID manquant' }, { status: 400 })
+    }
+    
+    const { name, email, phone, address, city, zip } = await request.json()
+    
+    const result = await pool.query(
+      'UPDATE clients SET name = $1, email = $2, phone = $3, address = $4, city = $5, zip = $6, updated_at = CURRENT_TIMESTAMP WHERE id = $7 RETURNING *',
+      [name, email, phone, address, city, zip, id]
+    )
+    
+    if (result.rows.length === 0) {
+      return NextResponse.json({ error: 'Client non trouvé' }, { status: 404 })
+    }
+    
+    return NextResponse.json(result.rows[0])
+  } catch (error: any) {
+    if (error.code === '23505') {
+      return NextResponse.json({ error: 'Un client avec cet email existe déjà' }, { status: 400 })
+    }
+    return NextResponse.json({ error: 'Erreur lors de la mise à jour du client' }, { status: 500 })
+  }
+}
+
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -72,7 +102,6 @@ export async function DELETE(request: NextRequest) {
       deletedClient: result.rows[0]
     })
   } catch (error: any) {
-    console.error('❌ Erreur DELETE client:', error)
     return NextResponse.json({ error: 'Erreur lors de la suppression du client' }, { status: 500 })
   }
 }
