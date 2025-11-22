@@ -58,7 +58,8 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card">
+      {/* SEULEMENT UN HEADER ICI */}
+      <header className="border-b border-border bg-card sticky top-0 z-50">
         <div className="mx-auto flex items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
             <img 
