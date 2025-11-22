@@ -34,12 +34,11 @@ export async function POST(request: NextRequest) {
     const { order_number, client_name, product, quantity, unit_price, total_price, status, order_date, product_images } = await request.json()
     
     console.log('➕ Création commande:', { order_number, client_name, product })
-    console.log('🖼️ Images reçues:', product_images)
     
     const result = await pool.query(
       `INSERT INTO orders (order_number, client_name, product, quantity, unit_price, total_price, status, order_date, product_images) 
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
-      [order_number, client_name, product, quantity, unit_price, total_price, status, order_date, JSON.stringify(product_images)] // Convertir en JSON
+      [order_number, client_name, product, quantity, unit_price, total_price, status, order_date, JSON.stringify(product_images)]
     )
     
     console.log('✅ Commande créée:', result.rows[0])
@@ -50,7 +49,8 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function PUT(request: NextRequest) {
+// AJOUTEZ CETTE FONCTION DELETE POUR LES COMMANDES
+export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
@@ -59,36 +59,18 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'ID manquant' }, { status: 400 })
     }
     
-    console.log('✏️ Modification commande ID:', id)
-    
-    const { order_number, client_name, product, quantity, unit_price, total_price, status, order_date, product_images } = await request.json()
-    
-    console.log('🖼️ Images pour mise à jour:', product_images)
-    
-    const result = await pool.query(
-      `UPDATE orders SET 
-        order_number = $1, 
-        client_name = $2, 
-        product = $3, 
-        quantity = $4, 
-        unit_price = $5, 
-        total_price = $6, 
-        status = $7, 
-        order_date = $8,
-        product_images = $9,
-        updated_at = CURRENT_TIMESTAMP
-       WHERE id = $10 RETURNING *`,
-      [order_number, client_name, product, quantity, unit_price, total_price, status, order_date, JSON.stringify(product_images), id] // Convertir en JSON
-    )
+    const result = await pool.query('DELETE FROM orders WHERE id = $1 RETURNING *', [id])
     
     if (result.rows.length === 0) {
       return NextResponse.json({ error: 'Commande non trouvée' }, { status: 404 })
     }
     
-    console.log('✅ Commande modifiée:', result.rows[0])
-    return NextResponse.json(result.rows[0])
+    return NextResponse.json({ 
+      message: 'Commande supprimée avec succès',
+      deletedOrder: result.rows[0]
+    })
   } catch (error: any) {
-    console.error('❌ Erreur PUT order:', error)
-    return NextResponse.json({ error: 'Erreur lors de la mise à jour de la commande: ' + error.message }, { status: 500 })
+    console.error('❌ Erreur DELETE order:', error)
+    return NextResponse.json({ error: 'Erreur lors de la suppression de la commande' }, { status: 500 })
   }
 }
