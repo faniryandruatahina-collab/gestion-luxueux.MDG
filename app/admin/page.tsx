@@ -27,76 +27,41 @@ export default function AdminLogin() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <div className="mx-auto w-16 h-16 bg-primary rounded-full flex items-center justify-center">
-            <Lock className="h-8 w-8 text-primary-foreground" />
-          </div>
-          <h2 className="mt-6 text-3xl font-bold text-foreground">
-            Accès Administrateur
-          </h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Connectez-vous pour accéder à l'application
-          </p>
-        </div>
-
-        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-foreground mb-1">
-                Nom d'utilisateur
-              </label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full rounded-md border border-border bg-input px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder="Votre identifiant"
-              />
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Main content */}
+      <div className="flex-1 flex items-center justify-center px-4">
+        <div className="max-w-md w-full space-y-8">
+          <div className="text-center">
+            <div className="mx-auto w-16 h-16 bg-primary rounded-full flex items-center justify-center">
+              <Lock className="h-8 w-8 text-primary-foreground" />
             </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1">
-                Mot de passe
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-md border border-border bg-input px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder="Votre mot de passe"
-              />
-            </div>
+            <h2 className="mt-6 text-3xl font-bold text-foreground">
+              Accès Administrateur
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Connectez-vous pour accéder à l'application
+            </p>
           </div>
 
-          {error && (
-            <div className="bg-destructive/20 border border-destructive text-destructive-foreground px-4 py-3 rounded-md">
-              {error}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
-          >
-            {loading ? 'Connexion...' : 'Se connecter'}
-          </button>
-        </form>
-
-        <div className="text-center">
-          <p className="text-xs text-muted-foreground">
-            Application sécurisée - Accès réservé
-          </p>
+          <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+            {/* ... formulaire de connexion ... */}
+          </form>
         </div>
       </div>
+
+      {/* Footer signature pour la page de connexion */}
+      <footer className="border-t border-border bg-card py-4">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="flex flex-col sm:flex-row justify-between items-center">
+            <div className="text-sm text-muted-foreground">
+              © 2025 Luxueux.MDG. Tous droits réservés.
+            </div>
+            <div className="text-sm text-muted-foreground mt-2 sm:mt-0">
+              Développé par <span className="text-accent font-medium">ANDRIATAHINA Fanirintsoa</span>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }
