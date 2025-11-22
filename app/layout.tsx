@@ -10,8 +10,8 @@ export const metadata: Metadata = {
   title: 'Luxueux.MDG',
   description: 'Application complète de gestion des clients, commandes et finances',
   icons: {
-    icon: '/logo.jpg', // ← METTEZ LE VRAI NOM DE VOTRE FICHIER
-    apple: '/logo.jpg', // ← METTEZ LE VRAI NOM DE VOTRE FICHIER
+    icon: '/logo.jpg',
+    apple: '/logo.jpg',
   },
 }
 
@@ -22,8 +22,25 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
-      <body className={`font-sans antialiased`}>
-        {children}
+      <body className={`font-sans antialiased flex flex-col min-h-screen`}>
+        <div className="flex-1">
+          {children}
+        </div>
+        
+       
+        <footer className="border-t border-border bg-card py-4 mt-8">
+          <div className="mx-auto max-w-7xl px-6">
+            <div className="flex flex-col sm:flex-row justify-between items-center">
+              <div className="text-sm text-muted-foreground">
+                © 2025 Luxueux.MDG. Tous droits réservés.
+              </div>
+              <div className="text-sm text-muted-foreground mt-2 sm:mt-0">
+                Développé par <span className="text-accent font-medium">Andriatahina Fanirintsoa</span>
+              </div>
+            </div>
+          </div>
+        </footer>
+        
         <Analytics />
       </body>
     </html>
