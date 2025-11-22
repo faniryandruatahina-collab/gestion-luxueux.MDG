@@ -28,13 +28,14 @@ export default function AdminLogin() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <div className="flex-1 flex items-center justify-center px-4 pb-24">
+      {/* Main Content */}
+      <div className="flex-1 flex items-center justify-center px-4 pb-28">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">
             <div className="mx-auto w-16 h-16 bg-primary rounded-full flex items-center justify-center">
               <Lock className="h-8 w-8 text-primary-foreground" />
             </div>
-            <h2 className="mt-6 text-3xl font-bold text-foreground">
+            <h2 className="mt-6 text-2xl sm:text-3xl font-bold text-foreground">
               Accès Administrateur
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
@@ -78,7 +79,7 @@ export default function AdminLogin() {
             </div>
 
             {error && (
-              <div className="bg-destructive/20 border border-destructive text-destructive-foreground px-4 py-3 rounded-md">
+              <div className="bg-destructive/20 border border-destructive text-destructive-foreground px-4 py-3 rounded-md text-sm">
                 {error}
               </div>
             )}
@@ -86,7 +87,7 @@ export default function AdminLogin() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 transition-colors"
             >
               {loading ? 'Connexion...' : 'Se connecter'}
             </button>
@@ -100,9 +101,10 @@ export default function AdminLogin() {
         </div>
       </div>
 
+      {/* Footer */}
       <footer className="border-t border-border bg-card py-4 fixed bottom-0 left-0 right-0 z-40">
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="flex flex-col sm:flex-row justify-between items-center">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <div className="flex flex-col sm:flex-row justify-between items-center text-center sm:text-left">
             <div className="text-sm text-muted-foreground">
               © 2025 Luxueux.MDG. Tous droits réservés.
             </div>
