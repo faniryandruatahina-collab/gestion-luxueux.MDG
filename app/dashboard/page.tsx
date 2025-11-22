@@ -63,50 +63,33 @@ export default function DashboardPage() {
         fetch('/api/orders')
       ])
 
-      if (!clientsRes.ok || !ordersRes.ok) {
-        throw new Error('Erreur lors du chargement des données')
+      if (clientsRes.ok && ordersRes.ok) {
+        const clients = await clientsRes.json()
+        const orders = await ordersRes.json()
+
+        const totalRevenue = orders.reduce((sum: number, order: any) => {
+          return sum + (parseFloat(order.total_price) || 0)
+        }, 0)
+        
+        const totalProfit = totalRevenue * 0.36
+
+        const sortedOrders = orders
+          .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+          .slice(0, 4)
+
+        setMetrics({
+          totalRevenue,
+          totalProfit,
+          ordersCount: orders.length,
+          clientsCount: clients.length,
+          revenueChange: 12.5,
+          profitChange: 8.2
+        })
+
+        setRecentOrders(sortedOrders)
       }
-
-      const clients = await clientsRes.json()
-      const orders = await ordersRes.json()
-
-      const totalRevenue = orders.reduce((sum: number, order: any) => {
-        const revenue = parseFloat(order.total_price) || 0
-        return sum + revenue
-      }, 0)
-      
-      const totalProfit = totalRevenue * 0.36
-
-      const sortedOrders = orders
-        .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-        .slice(0, 4)
-
-      setMetrics({
-        totalRevenue,
-        totalProfit,
-        ordersCount: orders.length,
-        clientsCount: clients.length,
-        revenueChange: 12.5,
-        profitChange: 8.2
-      })
-
-      setRecentOrders(sortedOrders)
     } catch (error) {
-      console.error('Erreur lors du chargement du dashboard:', error)
-      setMetrics({
-        totalRevenue: 125450,
-        totalProfit: 45230,
-        ordersCount: 142,
-        clientsCount: 28,
-        revenueChange: 12.5,
-        profitChange: 8.2
-      })
-      setRecentOrders([
-        { id: 1, order_number: 'CMD-001', client_name: 'Entreprise ABC', total_price: 1000, status: 'Livré' },
-        { id: 2, order_number: 'CMD-002', client_name: 'Société XYZ', total_price: 1250, status: 'En cours' },
-        { id: 3, order_number: 'CMD-003', client_name: 'Groupe DEF', total_price: 2500, status: 'En attente' },
-        { id: 4, order_number: 'CMD-004', client_name: 'Entreprise ABC', total_price: 800, status: 'Livré' },
-      ])
+      console.error('Erreur chargement dashboard:', error)
     } finally {
       setLoading(false)
     }
@@ -119,158 +102,121 @@ export default function DashboardPage() {
   }
 
   const formatAriary = (amount: number) => {
-    if (amount === undefined || amount === null || isNaN(amount)) {
-      return '0 Ar'
-    }
+    if (amount === undefined || amount === null || isNaN(amount)) return '0 Ar'
     return amount.toLocaleString('fr-FR') + ' Ar'
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-foreground">Redirection...</p>
+          <p className="text-foreground">{!isAuthenticated ? 'Redirection...' : 'Chargement...'}</p>
         </div>
-      </div>
-    )
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <header className="border-b border-border bg-card sticky top-0 z-50">
-          <div className="mx-auto flex items-center justify-between px-6 py-4">
-            <Link href="/" className="flex items-center gap-2 text-foreground hover:text-accent">
-              <ChevronLeft className="h-5 w-5" />
-              <span>Retour</span>
-            </Link>
-            <h1 className="text-2xl font-bold text-foreground">Tableau de Bord Financier</h1>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/20 rounded-md transition-colors"
-            >
-              <Lock className="h-4 w-4" />
-              Déconnexion
-            </button>
-          </div>
-        </header>
-        <main className="flex-1 mx-auto max-w-6xl w-full px-6 py-8 pb-24">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-muted-foreground">Chargement des données...</p>
-            </div>
-          </div>
-        </main>
-        <footer className="border-t border-border bg-card py-4 fixed bottom-0 left-0 right-0 z-40">
-          <div className="mx-auto max-w-7xl px-6">
-            <div className="flex flex-col sm:flex-row justify-between items-center">
-              <div className="text-sm text-muted-foreground">
-                © 2025 Luxueux.MDG. Tous droits réservés.
-              </div>
-              <div className="text-sm text-muted-foreground mt-2 sm:mt-0">
-                Développé par <span className="text-accent font-medium">ANDRIATAHINA Fanirintsoa</span>
-              </div>
-            </div>
-          </div>
-        </footer>
       </div>
     )
   }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      {/* Header */}
       <header className="border-b border-border bg-card sticky top-0 z-50">
-        <div className="mx-auto flex items-center justify-between px-6 py-4">
-          <Link href="/" className="flex items-center gap-2 text-foreground hover:text-accent">
-            <ChevronLeft className="h-5 w-5" />
-            <span>Retour</span>
-          </Link>
-          <h1 className="text-2xl font-bold text-foreground">Tableau de Bord Financier</h1>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/20 rounded-md transition-colors"
-          >
-            <Lock className="h-4 w-4" />
-            Déconnexion
-          </button>
+        <div className="mx-auto px-4 sm:px-6 py-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <Link href="/" className="flex items-center gap-2 text-foreground hover:text-accent transition-colors">
+                <ChevronLeft className="h-5 w-5" />
+                <span className="hidden sm:inline">Retour</span>
+              </Link>
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground">Tableau de Bord</h1>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/20 rounded-md transition-colors self-end sm:self-auto"
+            >
+              <Lock className="h-4 w-4" />
+              <span className="hidden sm:inline">Déconnexion</span>
+            </button>
+          </div>
         </div>
       </header>
 
-      <main className="flex-1 mx-auto max-w-6xl w-full px-6 py-8 pb-24">
-        <div className="grid gap-6 md:grid-cols-4 mb-8">
-          <div className="rounded-lg border border-border bg-card p-6">
+      {/* Main Content */}
+      <main className="flex-1 mx-auto w-full max-w-6xl px-4 sm:px-6 py-6 pb-28">
+        {/* Metrics Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="rounded-lg border border-border bg-card p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Revenu Total</p>
-                <p className="text-2xl font-bold text-foreground">
+                <p className="text-lg sm:text-xl font-bold text-foreground">
                   {formatAriary(metrics.totalRevenue)}
                 </p>
               </div>
-              <DollarSign className="h-8 w-8 text-accent" />
+              <DollarSign className="h-6 w-6 sm:h-8 sm:w-8 text-accent" />
             </div>
             <p className="text-xs text-green-500 mt-2">+{metrics.revenueChange}% ce mois</p>
           </div>
 
-          <div className="rounded-lg border border-border bg-card p-6">
+          <div className="rounded-lg border border-border bg-card p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Bénéfice Total</p>
-                <p className="text-2xl font-bold text-foreground">
+                <p className="text-lg sm:text-xl font-bold text-foreground">
                   {formatAriary(metrics.totalProfit)}
                 </p>
               </div>
-              <TrendingUp className="h-8 w-8 text-accent" />
+              <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-accent" />
             </div>
             <p className="text-xs text-green-500 mt-2">+{metrics.profitChange}% ce mois</p>
           </div>
 
-          <div className="rounded-lg border border-border bg-card p-6">
+          <div className="rounded-lg border border-border bg-card p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Commandes</p>
-                <p className="text-2xl font-bold text-foreground">{metrics.ordersCount}</p>
+                <p className="text-lg sm:text-xl font-bold text-foreground">{metrics.ordersCount}</p>
               </div>
-              <Package className="h-8 w-8 text-accent" />
+              <Package className="h-6 w-6 sm:h-8 sm:w-8 text-accent" />
             </div>
             <p className="text-xs text-muted-foreground mt-2">Au total</p>
           </div>
 
-          <div className="rounded-lg border border-border bg-card p-6">
+          <div className="rounded-lg border border-border bg-card p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Clients</p>
-                <p className="text-2xl font-bold text-foreground">{metrics.clientsCount}</p>
+                <p className="text-lg sm:text-xl font-bold text-foreground">{metrics.clientsCount}</p>
               </div>
-              <Users className="h-8 w-8 text-accent" />
+              <Users className="h-6 w-6 sm:h-8 sm:w-8 text-accent" />
             </div>
             <p className="text-xs text-muted-foreground mt-2">Enregistrés</p>
           </div>
         </div>
 
-        <div className="rounded-lg border border-border bg-card overflow-hidden">
-          <div className="border-b border-border px-6 py-4">
+        {/* Recent Orders */}
+        <div className="rounded-lg border border-border bg-card overflow-hidden mb-6">
+          <div className="border-b border-border px-4 sm:px-6 py-4">
             <h2 className="font-semibold text-foreground">Commandes Récentes</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="px-6 py-3 text-left text-sm font-medium text-muted-foreground">N° Commande</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-muted-foreground">Client</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-muted-foreground">Montant</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-muted-foreground">Statut</th>
+                  <th className="px-4 sm:px-6 py-3 text-left text-sm font-medium text-muted-foreground">N° Commande</th>
+                  <th className="px-4 sm:px-6 py-3 text-left text-sm font-medium text-muted-foreground">Client</th>
+                  <th className="px-4 sm:px-6 py-3 text-left text-sm font-medium text-muted-foreground">Montant</th>
+                  <th className="px-4 sm:px-6 py-3 text-left text-sm font-medium text-muted-foreground">Statut</th>
                 </tr>
               </thead>
               <tbody>
                 {recentOrders.map((order) => (
                   <tr key={order.id} className="border-b border-border hover:bg-secondary/50 transition-colors">
-                    <td className="px-6 py-3 text-sm text-foreground font-medium">{order.order_number}</td>
-                    <td className="px-6 py-3 text-sm text-foreground">{order.client_name}</td>
-                    <td className="px-6 py-3 text-sm text-foreground font-semibold">{formatAriary(order.total_price)}</td>
-                    <td className="px-6 py-3 text-sm">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    <td className="px-4 sm:px-6 py-3 text-sm text-foreground font-medium">{order.order_number}</td>
+                    <td className="px-4 sm:px-6 py-3 text-sm text-foreground">{order.client_name}</td>
+                    <td className="px-4 sm:px-6 py-3 text-sm text-foreground font-semibold">{formatAriary(order.total_price)}</td>
+                    <td className="px-4 sm:px-6 py-3 text-sm">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                         order.status === 'Livré' ? 'bg-green-500/20 text-green-400' :
                         order.status === 'En cours' ? 'bg-blue-500/20 text-blue-400' :
                         'bg-yellow-500/20 text-yellow-400'
@@ -292,36 +238,38 @@ export default function DashboardPage() {
           )}
         </div>
 
-        <div className="mt-8 grid gap-4 md:grid-cols-3">
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <Link 
             href="/clients" 
-            className="rounded-lg border border-border bg-card p-6 hover:border-accent hover:bg-card/50 transition-all text-center"
+            className="rounded-lg border border-border bg-card p-4 hover:border-accent hover:bg-card/50 transition-all text-center"
           >
             <Users className="h-8 w-8 text-accent mx-auto mb-2" />
-            <h3 className="font-semibold text-foreground">Gérer les Clients</h3>
-            <p className="text-sm text-muted-foreground mt-1">{metrics.clientsCount} clients</p>
+            <h3 className="font-semibold text-foreground mb-2">Gérer les Clients</h3>
+            <p className="text-sm text-muted-foreground">{metrics.clientsCount} clients</p>
           </Link>
 
           <Link 
             href="/orders" 
-            className="rounded-lg border border-border bg-card p-6 hover:border-accent hover:bg-card/50 transition-all text-center"
+            className="rounded-lg border border-border bg-card p-4 hover:border-accent hover:bg-card/50 transition-all text-center"
           >
             <Package className="h-8 w-8 text-accent mx-auto mb-2" />
-            <h3 className="font-semibold text-foreground">Gérer les Commandes</h3>
-            <p className="text-sm text-muted-foreground mt-1">{metrics.ordersCount} commandes</p>
+            <h3 className="font-semibold text-foreground mb-2">Gérer les Commandes</h3>
+            <p className="text-sm text-muted-foreground">{metrics.ordersCount} commandes</p>
           </Link>
 
-          <div className="rounded-lg border border-border bg-card p-6 text-center">
+          <div className="rounded-lg border border-border bg-card p-4 text-center">
             <TrendingUp className="h-8 w-8 text-accent mx-auto mb-2" />
-            <h3 className="font-semibold text-foreground">Performance</h3>
-            <p className="text-sm text-muted-foreground mt-1">{metrics.revenueChange}% croissance</p>
+            <h3 className="font-semibold text-foreground mb-2">Performance</h3>
+            <p className="text-sm text-muted-foreground">{metrics.revenueChange}% croissance</p>
           </div>
         </div>
       </main>
 
+      {/* Footer */}
       <footer className="border-t border-border bg-card py-4 fixed bottom-0 left-0 right-0 z-40">
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="flex flex-col sm:flex-row justify-between items-center">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <div className="flex flex-col sm:flex-row justify-between items-center text-center sm:text-left">
             <div className="text-sm text-muted-foreground">
               © 2025 Luxueux.MDG. Tous droits réservés.
             </div>
