@@ -51,20 +51,20 @@ export default function RootLayout({
           </div>
         </header>
 
-        {/* CONTENU PRINCIPAL AVEC PADDING */}
+       
         <main className="pt-20 pb-16 min-h-screen"> {/* pt-20 pour header, pb-16 pour footer */}
           {children}
         </main>
         
-        {/* FOOTER FIXE */}
+       
         <footer className="fixed bottom-0 left-0 right-0 border-t border-border bg-card py-3 z-40">
           <div className="mx-auto max-w-7xl px-6">
             <div className="flex flex-col sm:flex-row justify-between items-center">
               <div className="text-sm text-muted-foreground">
-                © 2024 Luxueux.MDG. Tous droits réservés.
+                © 2025 Luxueux.MDG. Tous droits réservés.
               </div>
               <div className="text-sm text-muted-foreground mt-2 sm:mt-0">
-                Développé par <span className="text-accent font-medium">Votre Nom</span>
+                Développé par <span className="text-accent font-medium">ANDRIATAHINA Fanirintsoa</span>
               </div>
             </div>
           </div>
