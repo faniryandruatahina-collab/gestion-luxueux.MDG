@@ -16,7 +16,7 @@ export default function HomePage() {
         alt="GestioHub Logo" 
         className="h-10 w-10 rounded-full object-cover" // h-10 w-10 + rounded-full
       />
-      <h1 className="text-2xl font-bold text-foreground">GestioHub</h1>
+      <h1 className="text-2xl font-bold text-foreground">Luxueux.MDG</h1>
     </div>
     <nav className="flex gap-8">
       <Link href="/clients" className="text-foreground hover:text-accent transition-colors">
