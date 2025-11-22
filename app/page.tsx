@@ -34,7 +34,7 @@ export default function HomePage() {
 
       <main className="mx-auto max-w-7xl px-6 py-16">
         <div className="mb-16 text-center">
-          <h2 className="mb-4 text-4xl font-bold text-foreground">Gestion d'Entreprise Simplifiée</h2>
+          <h2 className="mb-4 text-4xl font-bold text-foreground">Gestion d'Entreprise de Luxueux.MDG</h2>
           <p className="text-lg text-muted-foreground">
             Gérez vos clients, commandes et finances en un seul endroit
           </p>
