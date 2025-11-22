@@ -1,13 +1,97 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { BarChart3, Users, ShoppingCart, TrendingUp } from 'lucide-react'
+import { BarChart3, Users, ShoppingCart, TrendingUp, Lock } from 'lucide-react'
 
 export default function HomePage() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
+
+  useEffect(() => {
+    checkAuth()
+  }, [])
+
+  const checkAuth = () => {
+    const auth = localStorage.getItem('adminAuth')
+    const loginTime = localStorage.getItem('adminLoginTime')
+    
+    if (auth && loginTime && (Date.now() - parseInt(loginTime)) < 24 * 60 * 60 * 1000) {
+      setIsAuthenticated(true)
+    } else {
+      localStorage.removeItem('adminAuth')
+      localStorage.removeItem('adminLoginTime')
+      router.push('/admin')
+    }
+    setLoading(false)
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminAuth')
+    localStorage.removeItem('adminLoginTime')
+    router.push('/admin')
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-foreground">Vérification...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-foreground">Redirection...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-background">
-      
+      <header className="border-b border-border bg-card">
+        <div className="mx-auto flex items-center justify-between px-6 py-4">
+          <div className="flex items-center gap-3">
+            <img 
+              src="/logo.jpg"
+              alt="Luxueux.MDG Logo" 
+              className="h-10 w-10 rounded-lg object-cover"
+            />
+            <h1 className="text-2xl font-bold text-foreground">Luxueux.MDG</h1>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <nav className="flex gap-6">
+              <Link href="/clients" className="text-foreground hover:text-accent transition-colors">
+                Clients
+              </Link>
+              <Link href="/orders" className="text-foreground hover:text-accent transition-colors">
+                Commandes
+              </Link>
+              <Link href="/dashboard" className="text-foreground hover:text-accent transition-colors">
+                Tableau de bord
+              </Link>
+            </nav>
+            
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/20 rounded-md transition-colors"
+            >
+              <Lock className="h-4 w-4" />
+              Déconnexion
+            </button>
+          </div>
+        </div>
+      </header>
 
       <main className="mx-auto max-w-7xl px-6 py-16">
         <div className="mb-16 text-center">
@@ -41,6 +125,13 @@ export default function HomePage() {
               <p className="text-muted-foreground">Visualisez vos revenus totaux, bénéfices et indicateurs clés</p>
             </div>
           </Link>
+        </div>
+
+        <div className="mt-16 text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/20 text-primary rounded-full">
+            <Lock className="h-4 w-4" />
+            <span className="text-sm font-medium">Mode Administrateur Activé</span>
+          </div>
         </div>
       </main>
     </div>
