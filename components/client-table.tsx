@@ -16,9 +16,9 @@ export default function ClientTable({ clients, onEdit, onDelete }: ClientTablePr
         <thead>
           <tr className="border-b border-border bg-secondary/30">
             <th className="px-6 py-3 text-left text-sm font-medium text-muted-foreground">Nom</th>
-            <th className="px-6 py-3 text-left text-sm font-medium text-muted-foreground">Email</th>
             <th className="px-6 py-3 text-left text-sm font-medium text-muted-foreground">Téléphone</th>
             <th className="px-6 py-3 text-left text-sm font-medium text-muted-foreground">Adresse</th>
+            <th className="px-6 py-3 text-left text-sm font-medium text-muted-foreground">Ville</th>
             <th className="px-6 py-3 text-left text-sm font-medium text-muted-foreground">Actions</th>
           </tr>
         </thead>
@@ -26,9 +26,9 @@ export default function ClientTable({ clients, onEdit, onDelete }: ClientTablePr
           {clients.map((client) => (
             <tr key={client.id} className="border-b border-border hover:bg-secondary/50 transition-colors">
               <td className="px-6 py-4 text-sm text-foreground font-medium">{client.name}</td>
-              <td className="px-6 py-4 text-sm text-foreground">{client.email}</td>
               <td className="px-6 py-4 text-sm text-foreground">{client.phone}</td>
-              <td className="px-6 py-4 text-sm text-muted-foreground">{client.address}, {client.zip}</td>
+              <td className="px-6 py-4 text-sm text-muted-foreground">{client.address}</td>
+              <td className="px-6 py-4 text-sm text-muted-foreground">{client.city}</td>
               <td className="px-6 py-4 text-sm">
                 <div className="flex gap-2">
                   <Button
