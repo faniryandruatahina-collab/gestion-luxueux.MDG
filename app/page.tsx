@@ -7,30 +7,7 @@ import { BarChart3, Users, ShoppingCart, TrendingUp } from 'lucide-react'
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card">
-  <div className="mx-auto flex items-center justify-between px-6 py-4">
-    <div className="flex items-center gap-3"> {/* Augmenté le gap à 3 */}
-      {/* Votre logo avec taille augmentée et forme ronde */}
-      <img 
-        src="/logo.jpg"  // Chemin vers votre logo
-        alt="GestioHub Logo" 
-        className="h-10 w-10 rounded-full object-cover" // h-10 w-10 + rounded-full
-      />
-      <h1 className="text-2xl font-bold text-foreground">Luxueux.MDG</h1>
-    </div>
-    <nav className="flex gap-8">
-      <Link href="/clients" className="text-foreground hover:text-accent transition-colors">
-        Clients
-      </Link>
-      <Link href="/orders" className="text-foreground hover:text-accent transition-colors">
-        Commandes
-      </Link>
-      <Link href="/dashboard" className="text-foreground hover:text-accent transition-colors">
-        Tableau de bord
-      </Link>
-    </nav>
-  </div>
-</header>
+      
 
       <main className="mx-auto max-w-7xl px-6 py-16">
         <div className="mb-16 text-center">
