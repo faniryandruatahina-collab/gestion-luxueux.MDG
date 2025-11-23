@@ -4,11 +4,15 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { BarChart3, Users, ShoppingCart, TrendingUp, Lock } from 'lucide-react'
+import { useInactivityTimer } from '@/hooks/useInactivityTimer'
 
 export default function HomePage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
+  
+  // Timer d'inactivité de 30 minutes
+  useInactivityTimer(30)
 
   useEffect(() => {
     checkAuth()
@@ -133,6 +137,9 @@ export default function HomePage() {
             <Lock className="h-4 w-4" />
             <span className="text-sm font-medium">Mode Administrateur Activé</span>
           </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            Déconnexion automatique après 30 minutes d'inactivité
+          </p>
         </div>
       </main>
 
