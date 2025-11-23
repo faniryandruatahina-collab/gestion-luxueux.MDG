@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { Upload, X, Image as ImageIcon, Search, ChevronDown } from 'lucide-react'
+import { Upload, X, Image as ImageIcon, Search, ChevronDown, Phone, Mail, MapPin } from 'lucide-react'
 
 interface OrderFormProps {
   onSubmit: (data: any) => void
@@ -300,45 +300,45 @@ export default function OrderForm({ onSubmit, onCancel, initialData, clients = [
                 </div>
 
                 {/* Liste des clients */}
-<div className="max-h-48 overflow-y-auto">
-  {filteredClients.length > 0 ? (
-    filteredClients.map((client) => (
-      <button
-        key={client.id}
-        type="button"
-        onClick={() => handleClientSelect(client.name)}
-        className="w-full text-left px-3 py-2 hover:bg-accent hover:text-accent-foreground transition-colors border-b border-border last:border-b-0"
-      >
-        <div className="font-medium text-foreground">{client.name}</div>
-        <div className="text-xs text-muted-foreground flex flex-wrap gap-2 mt-1">
-          {client.phone && (
-            <span className="flex items-center gap-1">
-              <Phone className="h-3 w-3" />
-              {client.phone}
-            </span>
-          )}
-          {client.email && (
-            <span className="flex items-center gap-1">
-              <Mail className="h-3 w-3" />
-              {client.email}
-            </span>
-          )}
-          {client.city && (
-            <span className="flex items-center gap-1">
-              <MapPin className="h-3 w-3" />
-              {client.city}
-            </span>
-          )}
-        </div>
-      </button>
-    ))
-  ) : (
-    <div className="px-3 py-4 text-center text-muted-foreground">
-      <div className="text-sm">Aucun client trouvé</div>
-      <div className="text-xs mt-1">Essayez une autre recherche</div>
-    </div>
-  )}
-</div>
+                <div className="max-h-48 overflow-y-auto">
+                  {filteredClients.length > 0 ? (
+                    filteredClients.map((client) => (
+                      <button
+                        key={client.id}
+                        type="button"
+                        onClick={() => handleClientSelect(client.name)}
+                        className="w-full text-left px-3 py-2 hover:bg-accent hover:text-accent-foreground transition-colors border-b border-border last:border-b-0"
+                      >
+                        <div className="font-medium text-foreground">{client.name}</div>
+                        <div className="text-xs text-muted-foreground flex flex-wrap gap-2 mt-1">
+                          {client.phone && (
+                            <span className="flex items-center gap-1">
+                              <Phone className="h-3 w-3" />
+                              {client.phone}
+                            </span>
+                          )}
+                          {client.email && (
+                            <span className="flex items-center gap-1">
+                              <Mail className="h-3 w-3" />
+                              {client.email}
+                            </span>
+                          )}
+                          {client.city && (
+                            <span className="flex items-center gap-1">
+                              <MapPin className="h-3 w-3" />
+                              {client.city}
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    ))
+                  ) : (
+                    <div className="px-3 py-4 text-center text-muted-foreground">
+                      <div className="text-sm">Aucun client trouvé</div>
+                      <div className="text-xs mt-1">Essayez une autre recherche</div>
+                    </div>
+                  )}
+                </div>
 
                 {/* Bouton fermer */}
                 <div className="p-2 border-t border-border">
