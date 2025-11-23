@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft, TrendingUp, DollarSign, Package, CheckCircle, Users, Lock } from 'lucide-react'
+import { useInactivityTimer } from '@/hooks/useInactivityTimer'
 
 interface DashboardData {
   totalRevenue: number
@@ -35,6 +36,9 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const router = useRouter()
+  
+  // Timer d'inactivité de 30 minutes
+  useInactivityTimer(30)
 
   useEffect(() => {
     checkAuth()
@@ -119,104 +123,96 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
       <header className="border-b border-border bg-card sticky top-0 z-50">
-        <div className="mx-auto px-4 sm:px-6 py-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <Link href="/" className="flex items-center gap-2 text-foreground hover:text-accent transition-colors">
-                <ChevronLeft className="h-5 w-5" />
-                <span className="hidden sm:inline">Retour</span>
-              </Link>
-              <h1 className="text-xl sm:text-2xl font-bold text-foreground">Tableau de Bord</h1>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/20 rounded-md transition-colors self-end sm:self-auto"
-            >
-              <Lock className="h-4 w-4" />
-              <span className="hidden sm:inline">Déconnexion</span>
-            </button>
-          </div>
+        <div className="mx-auto flex items-center justify-between px-6 py-4">
+          <Link href="/" className="flex items-center gap-2 text-foreground hover:text-accent">
+            <ChevronLeft className="h-5 w-5" />
+            <span>Retour</span>
+          </Link>
+          <h1 className="text-2xl font-bold text-foreground">Tableau de Bord Financier</h1>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/20 rounded-md transition-colors"
+          >
+            <Lock className="h-4 w-4" />
+            Déconnexion
+          </button>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="flex-1 mx-auto w-full max-w-6xl px-4 sm:px-6 py-6 pb-28">
-        {/* Metrics Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="rounded-lg border border-border bg-card p-4">
+      <main className="flex-1 mx-auto max-w-6xl px-6 py-8">
+        <div className="grid gap-6 md:grid-cols-4 mb-8">
+          <div className="rounded-lg border border-border bg-card p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Revenu Total</p>
-                <p className="text-lg sm:text-xl font-bold text-foreground">
+                <p className="text-2xl font-bold text-foreground">
                   {formatAriary(metrics.totalRevenue)}
                 </p>
               </div>
-              <DollarSign className="h-6 w-6 sm:h-8 sm:w-8 text-accent" />
+              <DollarSign className="h-8 w-8 text-accent" />
             </div>
             <p className="text-xs text-green-500 mt-2">+{metrics.revenueChange}% ce mois</p>
           </div>
 
-          <div className="rounded-lg border border-border bg-card p-4">
+          <div className="rounded-lg border border-border bg-card p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Bénéfice Total</p>
-                <p className="text-lg sm:text-xl font-bold text-foreground">
+                <p className="text-2xl font-bold text-foreground">
                   {formatAriary(metrics.totalProfit)}
                 </p>
               </div>
-              <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-accent" />
+              <TrendingUp className="h-8 w-8 text-accent" />
             </div>
             <p className="text-xs text-green-500 mt-2">+{metrics.profitChange}% ce mois</p>
           </div>
 
-          <div className="rounded-lg border border-border bg-card p-4">
+          <div className="rounded-lg border border-border bg-card p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Commandes</p>
-                <p className="text-lg sm:text-xl font-bold text-foreground">{metrics.ordersCount}</p>
+                <p className="text-2xl font-bold text-foreground">{metrics.ordersCount}</p>
               </div>
-              <Package className="h-6 w-6 sm:h-8 sm:w-8 text-accent" />
+              <Package className="h-8 w-8 text-accent" />
             </div>
             <p className="text-xs text-muted-foreground mt-2">Au total</p>
           </div>
 
-          <div className="rounded-lg border border-border bg-card p-4">
+          <div className="rounded-lg border border-border bg-card p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Clients</p>
-                <p className="text-lg sm:text-xl font-bold text-foreground">{metrics.clientsCount}</p>
+                <p className="text-2xl font-bold text-foreground">{metrics.clientsCount}</p>
               </div>
-              <Users className="h-6 w-6 sm:h-8 sm:w-8 text-accent" />
+              <Users className="h-8 w-8 text-accent" />
             </div>
             <p className="text-xs text-muted-foreground mt-2">Enregistrés</p>
           </div>
         </div>
 
-        {/* Recent Orders */}
-        <div className="rounded-lg border border-border bg-card overflow-hidden mb-6">
-          <div className="border-b border-border px-4 sm:px-6 py-4">
+        <div className="rounded-lg border border-border bg-card overflow-hidden">
+          <div className="border-b border-border px-6 py-4">
             <h2 className="font-semibold text-foreground">Commandes Récentes</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="px-4 sm:px-6 py-3 text-left text-sm font-medium text-muted-foreground">N° Commande</th>
-                  <th className="px-4 sm:px-6 py-3 text-left text-sm font-medium text-muted-foreground">Client</th>
-                  <th className="px-4 sm:px-6 py-3 text-left text-sm font-medium text-muted-foreground">Montant</th>
-                  <th className="px-4 sm:px-6 py-3 text-left text-sm font-medium text-muted-foreground">Statut</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-muted-foreground">N° Commande</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-muted-foreground">Client</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-muted-foreground">Montant</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-muted-foreground">Statut</th>
                 </tr>
               </thead>
               <tbody>
                 {recentOrders.map((order) => (
                   <tr key={order.id} className="border-b border-border hover:bg-secondary/50 transition-colors">
-                    <td className="px-4 sm:px-6 py-3 text-sm text-foreground font-medium">{order.order_number}</td>
-                    <td className="px-4 sm:px-6 py-3 text-sm text-foreground">{order.client_name}</td>
-                    <td className="px-4 sm:px-6 py-3 text-sm text-foreground font-semibold">{formatAriary(order.total_price)}</td>
-                    <td className="px-4 sm:px-6 py-3 text-sm">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    <td className="px-6 py-3 text-sm text-foreground font-medium">{order.order_number}</td>
+                    <td className="px-6 py-3 text-sm text-foreground">{order.client_name}</td>
+                    <td className="px-6 py-3 text-sm text-foreground font-semibold">{formatAriary(order.total_price)}</td>
+                    <td className="px-6 py-3 text-sm">
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                         order.status === 'Livré' ? 'bg-green-500/20 text-green-400' :
                         order.status === 'En cours' ? 'bg-blue-500/20 text-blue-400' :
                         'bg-yellow-500/20 text-yellow-400'
@@ -238,38 +234,47 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="mt-8 grid gap-4 md:grid-cols-3">
           <Link 
             href="/clients" 
-            className="rounded-lg border border-border bg-card p-4 hover:border-accent hover:bg-card/50 transition-all text-center"
+            className="rounded-lg border border-border bg-card p-6 hover:border-accent hover:bg-card/50 transition-all text-center"
           >
             <Users className="h-8 w-8 text-accent mx-auto mb-2" />
-            <h3 className="font-semibold text-foreground mb-2">Gérer les Clients</h3>
-            <p className="text-sm text-muted-foreground">{metrics.clientsCount} clients</p>
+            <h3 className="font-semibold text-foreground">Gérer les Clients</h3>
+            <p className="text-sm text-muted-foreground mt-1">{metrics.clientsCount} clients</p>
           </Link>
 
           <Link 
             href="/orders" 
-            className="rounded-lg border border-border bg-card p-4 hover:border-accent hover:bg-card/50 transition-all text-center"
+            className="rounded-lg border border-border bg-card p-6 hover:border-accent hover:bg-card/50 transition-all text-center"
           >
             <Package className="h-8 w-8 text-accent mx-auto mb-2" />
-            <h3 className="font-semibold text-foreground mb-2">Gérer les Commandes</h3>
-            <p className="text-sm text-muted-foreground">{metrics.ordersCount} commandes</p>
+            <h3 className="font-semibold text-foreground">Gérer les Commandes</h3>
+            <p className="text-sm text-muted-foreground mt-1">{metrics.ordersCount} commandes</p>
           </Link>
 
-          <div className="rounded-lg border border-border bg-card p-4 text-center">
+          <div className="rounded-lg border border-border bg-card p-6 text-center">
             <TrendingUp className="h-8 w-8 text-accent mx-auto mb-2" />
-            <h3 className="font-semibold text-foreground mb-2">Performance</h3>
-            <p className="text-sm text-muted-foreground">{metrics.revenueChange}% croissance</p>
+            <h3 className="font-semibold text-foreground">Performance</h3>
+            <p className="text-sm text-muted-foreground mt-1">{metrics.revenueChange}% croissance</p>
           </div>
+        </div>
+
+        {/* Message de sécurité */}
+        <div className="mt-8 text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/20 text-primary rounded-full">
+            <Lock className="h-4 w-4" />
+            <span className="text-sm font-medium">Sécurité activée</span>
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            Déconnexion automatique après 30 minutes d'inactivité
+          </p>
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="border-t border-border bg-card py-4 fixed bottom-0 left-0 right-0 z-40">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="flex flex-col sm:flex-row justify-between items-center text-center sm:text-left">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="flex flex-col sm:flex-row justify-between items-center">
             <div className="text-sm text-muted-foreground">
               © 2025 Luxueux.MDG. Tous droits réservés.
             </div>
