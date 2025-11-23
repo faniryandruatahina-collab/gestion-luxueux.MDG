@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { Upload, X, Image as ImageIcon } from 'lucide-react'
+import { Upload, X, Image as ImageIcon, Search, ChevronDown } from 'lucide-react'
 
 interface OrderFormProps {
   onSubmit: (data: any) => void
@@ -19,7 +19,7 @@ interface FormData {
   unitPrice: string
   status: string
   date: string
-  productImages?: string[] // Changé pour supporter plusieurs images
+  productImages?: string[]
 }
 
 export default function OrderForm({ onSubmit, onCancel, initialData, clients = [] }: OrderFormProps) {
@@ -31,12 +31,29 @@ export default function OrderForm({ onSubmit, onCancel, initialData, clients = [
     unitPrice: '',
     status: 'En cours',
     date: new Date().toISOString().split('T')[0],
-    productImages: [] // Tableau vide pour les images
+    productImages: []
   })
 
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]) // Tableau pour les aperçus
+  const [imagePreviews, setImagePreviews] = useState<string[]>([])
+  const [searchTerm, setSearchTerm] = useState('')
+  const [showClientDropdown, setShowClientDropdown] = useState(false)
+  const [filteredClients, setFilteredClients] = useState<any[]>([])
 
-  // Fonction pour convertir une date ISO en format yyyy-MM-dd
+  // Filtrer les clients selon la recherche
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      setFilteredClients(clients)
+    } else {
+      const filtered = clients.filter(client =>
+        client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        client.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        client.phone?.includes(searchTerm) ||
+        client.city?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      setFilteredClients(filtered)
+    }
+  }, [searchTerm, clients])
+
   const formatDateForInput = (dateString: string): string => {
     if (!dateString) return new Date().toISOString().split('T')[0]
     
@@ -60,7 +77,6 @@ export default function OrderForm({ onSubmit, onCancel, initialData, clients = [
     }
   }
 
-  // Fonction pour générer un nouveau numéro de commande
   const generateOrderNumber = async () => {
     try {
       const response = await fetch('/api/orders')
@@ -91,29 +107,24 @@ export default function OrderForm({ onSubmit, onCancel, initialData, clients = [
 
   useEffect(() => {
     if (!initialData) {
-      // Mode création - générer le numéro de commande
       generateOrderNumber()
     } else {
-      // Mode édition - pré-remplir avec les données existantes
       console.log('📝 Données initiales pour édition:', initialData)
       
-      // Formater la date correctement pour l'input
       const rawDate = initialData.order_date || initialData.date
       const formattedDate = formatDateForInput(rawDate)
       
-      // Récupérer le numéro de commande existant
       const existingOrderNumber = initialData.order_number || initialData.orderNumber
       
-      // Gérer les images (supporte ancien format single image et nouveau format multiple)
       let initialImages: string[] = []
       if (initialData.product_images && Array.isArray(initialData.product_images)) {
         initialImages = initialData.product_images
       } else if (initialData.productImages && Array.isArray(initialData.productImages)) {
         initialImages = initialData.productImages
       } else if (initialData.product_image) {
-        initialImages = [initialData.product_image] // Convertir ancien format en tableau
+        initialImages = [initialData.product_image]
       } else if (initialData.productImage) {
-        initialImages = [initialData.productImage] // Convertir ancien format en tableau
+        initialImages = [initialData.productImage]
       }
 
       setFormData({
@@ -127,7 +138,6 @@ export default function OrderForm({ onSubmit, onCancel, initialData, clients = [
         productImages: initialImages
       })
       
-      // Afficher les images existantes
       setImagePreviews(initialImages)
     }
   }, [initialData])
@@ -139,7 +149,6 @@ export default function OrderForm({ onSubmit, onCancel, initialData, clients = [
     const newImages: string[] = []
     const newPreviews: string[] = []
 
-    // Limiter à 5 images maximum
     const remainingSlots = 5 - imagePreviews.length
     const filesToProcess = Array.from(files).slice(0, remainingSlots)
 
@@ -151,13 +160,11 @@ export default function OrderForm({ onSubmit, onCancel, initialData, clients = [
     let processedCount = 0
 
     filesToProcess.forEach((file) => {
-      // Vérifier le type de fichier
       if (!file.type.startsWith('image/')) {
         alert(`Le fichier "${file.name}" n'est pas une image valide`)
         return
       }
 
-      // Vérifier la taille (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         alert(`L'image "${file.name}" ne doit pas dépasser 5MB`)
         return
@@ -171,7 +178,6 @@ export default function OrderForm({ onSubmit, onCancel, initialData, clients = [
         
         processedCount++
         
-        // Quand toutes les images sont traitées
         if (processedCount === filesToProcess.length) {
           setFormData(prev => ({ 
             ...prev, 
@@ -197,16 +203,20 @@ export default function OrderForm({ onSubmit, onCancel, initialData, clients = [
     setFormData((prev: FormData) => ({ ...prev, [name]: value }))
   }
 
+  const handleClientSelect = (clientName: string) => {
+    setFormData(prev => ({ ...prev, clientName }))
+    setShowClientDropdown(false)
+    setSearchTerm('')
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
-    // Vérifier que le numéro de commande est défini
     if (!formData.orderNumber || formData.orderNumber === 'CMD-000') {
       alert('Erreur: Le numéro de commande n\'est pas défini')
       return
     }
     
-    // Calcul sécurisé
     const quantity = parseFloat(formData.quantity) || 0
     const unitPrice = parseFloat(formData.unitPrice) || 0
     const totalPrice = quantity * unitPrice
@@ -232,6 +242,7 @@ export default function OrderForm({ onSubmit, onCancel, initialData, clients = [
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid gap-4 md:grid-cols-2">
+        {/* Numéro de commande */}
         <div>
           <label className="block text-sm font-medium text-foreground mb-1">N° Commande</label>
           <input
@@ -251,29 +262,112 @@ export default function OrderForm({ onSubmit, onCancel, initialData, clients = [
           )}
         </div>
         
-        <div>
+        {/* Sélection du client avec recherche */}
+        <div className="relative">
           <label className="block text-sm font-medium text-foreground mb-1">Nom du Client</label>
-          <select
-            name="clientName"
-            value={formData.clientName}
-            onChange={handleChange}
-            required
-            className="w-full rounded-md border border-border bg-input px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-          >
-            <option value="">Sélectionnez un client</option>
-            {clients.map((client) => (
-              <option key={client.id} value={client.name}>
-                {client.name} - {client.email}
-              </option>
-            ))}
-          </select>
-          {initialData && formData.clientName && (
-            <p className="text-xs text-muted-foreground mt-1">
-              Client actuel: {formData.clientName}
-            </p>
+          <div className="relative">
+            <div className="flex items-center">
+              <input
+                type="text"
+                value={searchTerm || formData.clientName}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value)
+                  if (!showClientDropdown) setShowClientDropdown(true)
+                }}
+                onFocus={() => setShowClientDropdown(true)}
+                placeholder="Rechercher un client..."
+                className="w-full rounded-md border border-border bg-input px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary pr-10"
+              />
+              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            </div>
+            
+            {/* Dropdown des clients */}
+            {showClientDropdown && (
+              <div className="absolute top-full left-0 right-0 bg-card border border-border rounded-md shadow-lg z-10 mt-1 max-h-60 overflow-y-auto">
+                {/* Barre de recherche dans le dropdown */}
+                <div className="p-2 border-b border-border">
+                  <div className="relative">
+                    <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                    <input
+                      type="text"
+                      placeholder="Rechercher par nom, email, téléphone..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-8 pr-2 py-1 rounded border border-border bg-input text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                      autoFocus
+                    />
+                  </div>
+                </div>
+
+                {/* Liste des clients */}
+                <div className="max-h-48 overflow-y-auto">
+                  {filteredClients.length > 0 ? (
+                    filteredClients.map((client) => (
+                      <button
+                        key={client.id}
+                        type="button"
+                        onClick={() => handleClientSelect(client.name)}
+                        className="w-full text-left px-3 py-2 hover:bg-accent hover:text-accent-foreground transition-colors border-b border-border last:border-b-0"
+                      >
+                        <div className="font-medium text-foreground">{client.name}</div>
+                        <div className="text-xs text-muted-foreground flex flex-wrap gap-2 mt-1">
+                          {client.phone && <span>📞 {client.phone}</span>}
+                          {client.email && <span>✉️ {client.email}</span>}
+                          {client.city && <span>🏙️ {client.city}</span>}
+                        </div>
+                      </button>
+                    ))
+                  ) : (
+                    <div className="px-3 py-4 text-center text-muted-foreground">
+                      <div className="text-sm">Aucun client trouvé</div>
+                      <div className="text-xs mt-1">Essayez une autre recherche</div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Bouton fermer */}
+                <div className="p-2 border-t border-border">
+                  <button
+                    type="button"
+                    onClick={() => setShowClientDropdown(false)}
+                    className="w-full text-center text-sm text-muted-foreground hover:text-foreground py-1"
+                  >
+                    Fermer
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Client sélectionné */}
+          {formData.clientName && !showClientDropdown && (
+            <div className="mt-2 p-2 bg-primary/10 rounded-md border border-primary/20">
+              <div className="text-sm font-medium text-primary">Client sélectionné:</div>
+              <div className="text-sm text-foreground">{formData.clientName}</div>
+              <button
+                type="button"
+                onClick={() => {
+                  setFormData(prev => ({ ...prev, clientName: '' }))
+                  setSearchTerm('')
+                }}
+                className="text-xs text-destructive hover:text-destructive/80 mt-1"
+              >
+                Changer de client
+              </button>
+            </div>
+          )}
+
+          {/* Indicateur de résultats */}
+          {showClientDropdown && searchTerm && (
+            <div className="absolute top-full left-0 right-0 bg-card/95 backdrop-blur-sm rounded-b-md border border-t-0 border-border p-2 z-20">
+              <div className="text-xs text-muted-foreground text-center">
+                {filteredClients.length} client{filteredClients.length !== 1 ? 's' : ''} trouvé{filteredClients.length !== 1 ? 's' : ''}
+              </div>
+            </div>
           )}
         </div>
 
+        {/* Produit */}
         <div>
           <label className="block text-sm font-medium text-foreground mb-1">Produit</label>
           <input
@@ -287,7 +381,7 @@ export default function OrderForm({ onSubmit, onCancel, initialData, clients = [
           />
         </div>
 
-        {/* NOUVEAU : Cadre carré compact pour plusieurs images */}
+        {/* Images du produit */}
         <div className="md:col-span-2">
           <label className="block text-sm font-medium text-foreground mb-2">
             Images du Produit ({imagePreviews.length}/5)
@@ -342,12 +436,12 @@ export default function OrderForm({ onSubmit, onCancel, initialData, clients = [
             )}
           </div>
           
-          {/* Instructions */}
           <p className="text-xs text-muted-foreground mt-2">
             Maximum 5 images. Formats supportés: JPG, PNG, JPEG
           </p>
         </div>
         
+        {/* Quantité */}
         <div>
           <label className="block text-sm font-medium text-foreground mb-1">Quantité</label>
           <input
@@ -362,6 +456,7 @@ export default function OrderForm({ onSubmit, onCancel, initialData, clients = [
           />
         </div>
         
+        {/* Prix unitaire */}
         <div>
           <label className="block text-sm font-medium text-foreground mb-1">Prix Unitaire (Ar)</label>
           <input
@@ -377,6 +472,7 @@ export default function OrderForm({ onSubmit, onCancel, initialData, clients = [
           />
         </div>
         
+        {/* Statut */}
         <div>
           <label className="block text-sm font-medium text-foreground mb-1">Statut</label>
           <select
@@ -391,6 +487,7 @@ export default function OrderForm({ onSubmit, onCancel, initialData, clients = [
           </select>
         </div>
 
+        {/* Date de commande */}
         <div>
           <label className="block text-sm font-medium text-foreground mb-1">Date de commande</label>
           <input
@@ -404,6 +501,7 @@ export default function OrderForm({ onSubmit, onCancel, initialData, clients = [
         </div>
       </div>
       
+      {/* Boutons d'action */}
       <div className="flex gap-3 justify-end pt-4">
         <Button type="button" variant="outline" onClick={onCancel}>
           Annuler
