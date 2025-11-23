@@ -7,6 +7,7 @@ import { Plus, ChevronLeft, Lock, Search, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import ClientForm from '@/components/client-form'
 import ClientTable from '@/components/client-table'
+import { useInactivityTimer } from '@/hooks/useInactivityTimer'
 
 interface Client {
   id: number
@@ -25,6 +26,9 @@ export default function ClientsPage() {
   const [loading, setLoading] = useState(true)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const router = useRouter()
+  
+  // Timer d'inactivité de 30 minutes
+  useInactivityTimer(30)
 
   useEffect(() => {
     checkAuth()
